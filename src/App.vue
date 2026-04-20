@@ -348,27 +348,23 @@ watch(
       @click="mobilePanelOpen = false"
     />
 
-    <header class="relative overflow-hidden rounded-[36px] border border-white/60 bg-white/70 px-6 py-8 shadow-[0_30px_100px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:px-8 lg:px-10">
-      <div class="absolute inset-x-0 top-0 h-32 bg-gradient-to-r from-primary/15 via-transparent to-accent/35" />
-      <div class="relative grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_360px] lg:items-start">
-        <div class="space-y-5">
-          <Badge class="gap-1.5 rounded-full px-4 py-1.5">
-            <Sparkles class="size-3.5" />
-            Pure frontend LAN messenger
-          </Badge>
-
-          <div class="space-y-4">
-            <h1 class="max-w-4xl text-4xl font-semibold tracking-[-0.05em] text-slate-950 sm:text-5xl lg:text-6xl">
-              局域网里任何设备，
-              <span class="text-primary">只打开页面就能开始聊天。</span>
-            </h1>
-            <p class="max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg">
-              用 WebRTC 数据通道做纯前端点对点聊天。支持多人文字、图片、历史同步和手机/桌面端协同，
-              让 LAN Chat 更像一个真正能长期用的工具，而不是只会演示的样板页。
-            </p>
+    <header class="relative overflow-hidden rounded-[32px] border border-white/60 bg-white/70 px-5 py-6 shadow-[0_30px_100px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:px-6 sm:py-7 lg:px-8">
+      <div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-primary/15 via-transparent to-accent/35" />
+      <div class="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div class="space-y-4">
+          <div class="flex flex-wrap items-center gap-3">
+            <Badge class="gap-1.5 rounded-full px-3 py-1.5">
+              <Sparkles class="size-3.5" />
+              LAN Chat
+            </Badge>
+            <h1 class="text-lg font-semibold tracking-tight text-slate-950 sm:text-xl">局域网聊天</h1>
           </div>
 
-          <div class="flex flex-wrap gap-3">
+          <p class="max-w-2xl text-sm leading-6 text-muted-foreground">
+            打开页面即可发文字和图片，适合局域网内临时沟通。
+          </p>
+
+          <div class="flex flex-wrap gap-2.5">
             <Badge variant="outline" class="gap-1.5 px-3 py-1.5">
               <Wifi class="size-3.5" />
               {{ phase === 'room' ? roomLabel : '等待配对' }}
@@ -386,17 +382,17 @@ watch(
               {{ signalState === 'online' ? '信令节点在线' : signalState === 'connecting' ? '连接信令节点中' : '信令节点离线' }}
             </Badge>
           </div>
+        </div>
 
-          <div class="rounded-[28px] border border-border/70 bg-background/70 p-4 backdrop-blur">
+        <div class="grid gap-3">
+          <div class="rounded-[24px] border border-border/70 bg-background/70 p-4 backdrop-blur">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="space-y-1">
                 <div class="flex items-center gap-2 text-sm font-medium text-foreground">
                   <Palette class="size-4 text-primary" />
-                  界面主题
+                  主题
                 </div>
-                <p class="text-sm text-muted-foreground">
-                  可切换整站主色，并把当前选择保存在本机浏览器中。
-                </p>
+                <p class="text-sm text-muted-foreground">当前选择会保存在本机。</p>
               </div>
 
               <div class="flex flex-wrap gap-2">
@@ -407,7 +403,7 @@ watch(
                   size="sm"
                   :class="
                     cn(
-                      'h-auto min-w-24 justify-start rounded-2xl px-3 py-2 text-left',
+                      'h-10 min-w-24 justify-start rounded-2xl px-3 text-left',
                       selectedTheme === theme.id && 'border-primary bg-primary/10 shadow-sm shadow-primary/10',
                     )
                   "
@@ -417,44 +413,36 @@ watch(
                     class="size-3 shrink-0 rounded-full border border-black/5"
                     :style="{ backgroundColor: theme.previewColor }"
                   />
-                  <span class="flex flex-col items-start leading-tight">
-                    <span>{{ theme.label }}</span>
-                    <span class="text-[11px] text-muted-foreground">{{ theme.description }}</span>
-                  </span>
+                  <span>{{ theme.label }}</span>
                 </Button>
               </div>
             </div>
           </div>
-        </div>
 
-        <Card class="rounded-[30px] border-primary/10 bg-white/80">
-          <CardHeader>
-            <Badge variant="secondary" class="w-fit gap-1.5">
-              <Info class="size-3.5" />
-              产品边界
-            </Badge>
-            <CardTitle class="text-xl">当前模型说明</CardTitle>
-            <CardDescription>
-              无公网后端、无 TURN、无公共 STUN。局域网里由一台设备临时充当发现和信令节点，所有设备访问它的页面地址后，就能看到统一的房间列表并直接进入。
-            </CardDescription>
-          </CardHeader>
-          <CardContent class="grid gap-3 text-sm leading-6 text-muted-foreground">
-            <div class="rounded-[22px] border border-border/70 bg-background/80 p-4">
-              <p class="font-medium text-foreground">状态</p>
-              <p class="mt-1">{{ statusText }}</p>
+          <div class="rounded-[24px] border border-primary/10 bg-white/80 p-4">
+            <div class="flex items-center gap-2 text-sm font-medium text-foreground">
+              <Info class="size-4 text-primary" />
+              当前模式
             </div>
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div class="rounded-[22px] border border-border/70 bg-background/80 p-4">
-                <p class="text-xs uppercase tracking-[0.16em] text-muted-foreground">消息类型</p>
-                <p class="mt-2 font-medium text-foreground">文本 + 图片</p>
+            <p class="mt-2 text-sm leading-6 text-muted-foreground">
+              房间由局域网节点发现，消息仍在浏览器间传输。
+            </p>
+            <div class="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
+              <div class="rounded-[20px] border border-border/70 bg-background/80 p-3">
+                <p class="text-xs font-medium text-muted-foreground">状态</p>
+                <p class="mt-1 text-sm font-medium text-foreground">{{ statusText }}</p>
               </div>
-              <div class="rounded-[22px] border border-border/70 bg-background/80 p-4">
-                <p class="text-xs uppercase tracking-[0.16em] text-muted-foreground">连接拓扑</p>
-                <p class="mt-2 font-medium text-foreground">Host relay star</p>
+              <div class="rounded-[20px] border border-border/70 bg-background/80 p-3">
+                <p class="text-xs font-medium text-muted-foreground">消息</p>
+                <p class="mt-1 text-sm font-medium text-foreground">文本 + 图片</p>
+              </div>
+              <div class="rounded-[20px] border border-border/70 bg-background/80 p-3">
+                <p class="text-xs font-medium text-muted-foreground">拓扑</p>
+                <p class="mt-1 text-sm font-medium text-foreground">房主转发</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -478,16 +466,14 @@ watch(
 
     <section v-if="phase === 'entry' && discoveredRooms.length" class="mt-6">
       <Card class="overflow-hidden">
-        <CardHeader class="gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <CardHeader class="gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div class="space-y-2">
             <Badge variant="secondary" class="w-fit gap-1.5">
               <Wifi class="size-3.5" />
               自动发现
             </Badge>
-            <CardTitle>当前可见房间</CardTitle>
-            <CardDescription>
-              房间列表来自局域网内的临时信令节点。只要所有设备都访问这个节点暴露的页面地址，就能看到一致的在线房间列表。
-            </CardDescription>
+            <CardTitle class="text-base sm:text-lg">在线房间</CardTitle>
+            <CardDescription>同一节点下可直接加入的房间。</CardDescription>
           </div>
           <Badge variant="outline" class="px-4 py-1.5">{{ discoveredRooms.length }} 个房间</Badge>
         </CardHeader>
@@ -500,10 +486,10 @@ watch(
           >
             <div class="space-y-2">
               <Badge variant="outline" class="w-fit">可直连</Badge>
-              <h3 class="text-lg font-semibold text-foreground">{{ room.roomLabel }}</h3>
+              <p class="text-base font-medium text-foreground">{{ room.roomLabel }}</p>
               <p class="text-sm leading-6 text-muted-foreground">
                 <span class="font-medium text-foreground">{{ room.hostNickname }}</span>
-                正在主持聊天，会话将通过房主转发消息与历史。
+                正在主持。
               </p>
             </div>
 
@@ -526,11 +512,11 @@ watch(
                 <Sparkles class="size-3.5" />
                 房主入口
               </Badge>
-              <CardTitle>创建临时房间</CardTitle>
+              <CardTitle class="text-base sm:text-lg">新建房间</CardTitle>
             </div>
             <Badge variant="outline">星型拓扑</Badge>
           </div>
-          <CardDescription>创建后立即生成一次性邀请码；后续可继续追加新的邀请码，让更多设备加入同一个房间。</CardDescription>
+          <CardDescription>创建后立即得到邀请码。</CardDescription>
         </CardHeader>
 
         <CardContent class="space-y-5">
@@ -541,29 +527,20 @@ watch(
 
           <Button class="w-full sm:w-auto" @click="handleCreateRoom">
             <Wifi class="size-4" />
-            创建房间并生成邀请码
+            创建房间
           </Button>
 
           <Separator />
 
-          <div class="grid gap-3 text-sm leading-6 text-muted-foreground">
+          <div class="grid gap-3 text-sm leading-6 text-muted-foreground sm:grid-cols-3">
             <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-              <p class="font-medium text-foreground">房主职责</p>
-              <p class="mt-1">负责消息转发、历史同步和房间生命周期，并把房间状态注册到局域网信令节点。</p>
+              历史保存在房主浏览器。
             </div>
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-                <p class="font-medium text-foreground">历史持久化</p>
-                <p class="mt-1">IndexedDB 保存在房主浏览器内。</p>
-              </div>
-              <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-                <p class="font-medium text-foreground">房间发现</p>
-                <p class="mt-1">房间列表由局域网临时节点统一维护。</p>
-              </div>
-              <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-                <p class="font-medium text-foreground">图片支持</p>
-                <p class="mt-1">桌面端可直接粘贴截图发送。</p>
-              </div>
+            <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
+              同一节点下可看到房间。
+            </div>
+            <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
+              支持图片和桌面截图。
             </div>
           </div>
         </CardContent>
@@ -577,11 +554,11 @@ watch(
                 <Users class="size-3.5" />
                 访客入口
               </Badge>
-              <CardTitle>手动加入房间</CardTitle>
+              <CardTitle class="text-base sm:text-lg">加入房间</CardTitle>
             </div>
             <Badge variant="outline">无需注册</Badge>
           </div>
-          <CardDescription>跨设备统一使用文本邀请码加入。复制和粘贴是唯一配对方式，流程更稳定也更容易排查问题。</CardDescription>
+          <CardDescription>粘贴邀请码即可加入。</CardDescription>
         </CardHeader>
 
         <CardContent class="space-y-5">
@@ -602,14 +579,11 @@ watch(
 
           <Button class="w-full sm:w-auto" @click="handlePrepareJoin">
             <ArrowRight class="size-4" />
-            生成加入应答
+            生成应答
           </Button>
 
           <div class="rounded-[24px] border border-border/70 bg-background/80 p-4 text-sm leading-6 text-muted-foreground">
-            <p class="font-medium text-foreground">接入提示</p>
-            <p class="mt-1">
-              当前版本只保留文本邀请码和文本应答包，适合桌面端、移动端统一处理。
-            </p>
+            只保留文本配对，跨设备更稳定。
           </div>
         </CardContent>
       </Card>
@@ -624,13 +598,13 @@ watch(
               <ArrowRight v-else class="size-3.5" />
               {{ autoJoining ? '自动进入' : '手动配对' }}
             </Badge>
-            <CardTitle>{{ autoJoining ? '正在自动进入房间' : '把加入应答发回房主' }}</CardTitle>
+            <CardTitle class="text-base sm:text-lg">{{ autoJoining ? '正在进入房间' : '把应答发给房主' }}</CardTitle>
             <CardDescription>
               <template v-if="autoJoining">
-                正在尝试自动进入 {{ directJoinPendingRoomLabel || roomLabel }}，页面已生成并自动提交加入应答，等待房主完成配对。
+                正在进入 {{ directJoinPendingRoomLabel || roomLabel }}，等待房主完成配对。
               </template>
               <template v-else>
-                你正在加入 {{ roomLabel }}，房主昵称是 {{ hostProfile?.nickname ?? '房主' }}。把下方应答包复制给房主，对方导入后会自动切进聊天室。
+                你正在加入 {{ roomLabel }}。把下方应答发给 {{ hostProfile?.nickname ?? '房主' }}，导入后会自动进入。
               </template>
             </CardDescription>
           </div>
@@ -641,8 +615,8 @@ watch(
         <CardContent>
           <Card v-if="!autoJoining" class="border-border/70 bg-background/70">
             <CardHeader>
-              <CardTitle class="text-lg">加入应答文本</CardTitle>
-              <CardDescription>把下方长文本发回房主；房主粘贴导入后，这个页面会自动切进聊天室。</CardDescription>
+              <CardTitle class="text-base sm:text-lg">加入应答</CardTitle>
+              <CardDescription>复制给房主即可。</CardDescription>
             </CardHeader>
             <CardContent class="space-y-4">
               <Textarea v-model="joinAnswerBundleText" :rows="10" readonly class="min-h-64" />
@@ -656,9 +630,9 @@ watch(
             <div class="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
               <LoaderCircle class="size-6 animate-spin" />
             </div>
-            <h3 class="mt-5 text-xl font-semibold text-foreground">等待房主响应</h3>
+            <h3 class="mt-5 text-lg font-semibold text-foreground">等待房主</h3>
             <p class="mt-3 text-sm leading-7 text-muted-foreground">
-              如果等待较久仍未进入房间，可以返回首页，改用手动邀请码加入。
+              如果等待太久，可以返回首页改用手动加入。
             </p>
             <Button class="mt-6" @click="handleLeaveRoom">
               <DoorOpen class="size-4" />
@@ -680,7 +654,7 @@ watch(
       >
         <div class="mb-4 flex items-center justify-between gap-3 lg:hidden">
           <Badge variant="outline">{{ isHost ? '房主模式' : '成员模式' }}</Badge>
-          <Button variant="ghost" size="icon" @click="mobilePanelOpen = false">
+          <Button variant="ghost" size="icon" aria-label="关闭房间面板" @click="mobilePanelOpen = false">
             <X class="size-4" />
           </Button>
         </div>
@@ -694,18 +668,18 @@ watch(
                     <Wifi class="size-3.5" />
                     {{ isHost ? '房主模式' : '成员模式' }}
                   </Badge>
-                  <CardTitle>{{ roomLabel }}</CardTitle>
+                  <CardTitle class="text-base sm:text-lg">{{ roomLabel }}</CardTitle>
                 </div>
                 <Badge variant="outline">{{ onlinePeers.length }} 在线</Badge>
               </div>
             </CardHeader>
             <CardContent class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-                <p class="text-xs uppercase tracking-[0.16em] text-muted-foreground">我的身份</p>
+                <p class="text-xs font-medium text-muted-foreground">我的身份</p>
                 <p class="mt-2 text-base font-semibold text-foreground">{{ localPeer?.nickname }}</p>
               </div>
               <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-                <p class="text-xs uppercase tracking-[0.16em] text-muted-foreground">当前状态</p>
+                <p class="text-xs font-medium text-muted-foreground">当前状态</p>
                 <p class="mt-2 text-base font-semibold text-foreground">{{ statusText }}</p>
               </div>
             </CardContent>
@@ -713,8 +687,8 @@ watch(
 
           <Card class="border-border/70 bg-white/80">
             <CardHeader class="pb-4">
-              <CardTitle class="text-lg">成员状态</CardTitle>
-              <CardDescription>房主负责转发消息和历史，因此成员的在线状态会直接影响当前房间体验。</CardDescription>
+              <CardTitle class="text-base sm:text-lg">成员状态</CardTitle>
+              <CardDescription>显示当前在线成员。</CardDescription>
             </CardHeader>
             <CardContent class="grid gap-3">
               <article
@@ -740,8 +714,8 @@ watch(
             <CardHeader class="pb-4">
               <div class="flex items-center justify-between gap-3">
                 <div class="space-y-2">
-                  <CardTitle class="text-lg">继续加人</CardTitle>
-                  <CardDescription>生成新的文本邀请码，或者把访客返回的文本应答包导入当前房间。</CardDescription>
+                  <CardTitle class="text-base sm:text-lg">继续加人</CardTitle>
+                  <CardDescription>生成邀请码或导入应答。</CardDescription>
                 </div>
                 <Badge variant="outline">{{ inviteExpiryLabel }}</Badge>
               </div>
@@ -749,48 +723,48 @@ watch(
 
             <CardContent class="grid gap-4">
               <div class="grid gap-2">
-                <Label>邀请码文本</Label>
+                <Label>邀请码</Label>
                 <Textarea v-model="inviteBundleText" :rows="5" readonly class="min-h-40" />
               </div>
 
               <Button @click="handleGenerateInvite">
                 <Sparkles class="size-4" />
-                生成新的邀请码
+                生成邀请码
               </Button>
 
               <Separator />
 
               <div class="grid gap-2">
-                <Label>访客应答包</Label>
+                <Label>访客应答</Label>
                 <Textarea
                   v-model="pendingAnswerImport"
                   :rows="5"
                   class="min-h-40"
-                  placeholder="把访客返回的应答包粘贴到这里，然后点击导入。"
+                  placeholder="粘贴访客返回的应答文本。"
                 />
               </div>
 
               <Button @click="handleImportAnswer">
                 <ArrowRight class="size-4" />
-                导入访客应答
+                导入应答
               </Button>
             </CardContent>
           </Card>
 
           <Card v-else class="border-border/70 bg-white/80">
             <CardHeader class="pb-4">
-              <CardTitle class="text-lg">访客提示</CardTitle>
-              <CardDescription>这一页只保留和当前会话直接相关的说明，避免在移动端把侧边栏挤得太满。</CardDescription>
+              <CardTitle class="text-base sm:text-lg">访客提示</CardTitle>
+              <CardDescription>保留和当前会话直接相关的信息。</CardDescription>
             </CardHeader>
             <CardContent class="grid gap-3 text-sm leading-6 text-muted-foreground">
               <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-                消息会先发给房主，再由房主广播给所有在线成员。
+                消息会先到房主，再转发给其他成员。
               </div>
               <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-                如果房主刷新或离开，当前房间会结束，需要重新获取文本邀请码。
+                房主刷新或离开后，房间会结束。
               </div>
               <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-                长会话默认只渲染最近一部分消息，可在消息区顶部继续加载更早历史。
+                可以在消息区顶部继续加载历史。
               </div>
             </CardContent>
           </Card>
@@ -810,7 +784,7 @@ watch(
                 <MessageSquareText class="size-3.5" />
                 局域网聊天室
               </Badge>
-              <CardTitle>{{ roomLabel }}</CardTitle>
+              <CardTitle class="text-base sm:text-lg">{{ roomLabel }}</CardTitle>
               <CardDescription>{{ statusText }}</CardDescription>
             </div>
 
@@ -911,8 +885,8 @@ watch(
 
         <Card class="overflow-hidden">
           <CardHeader class="pb-4">
-            <CardTitle class="text-lg">发送消息</CardTitle>
-            <CardDescription>支持多行文本、桌面端粘贴图片，以及手机端相册/拍照发送。</CardDescription>
+            <CardTitle class="text-base sm:text-lg">发送消息</CardTitle>
+            <CardDescription>支持文本、粘贴图片和相册发送。</CardDescription>
           </CardHeader>
 
           <CardContent class="space-y-4">
@@ -929,14 +903,14 @@ watch(
               v-model="messageDraft"
               :rows="4"
               class="min-h-32 resize-none"
-              placeholder="输入文字，按 Enter 发送，Shift + Enter 换行。桌面端可直接粘贴截图。"
+              placeholder="输入消息。Enter 发送，Shift + Enter 换行；桌面端可粘贴截图。"
               @keydown="handleComposerKeydown"
               @paste="handleComposerPaste"
             />
 
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex flex-col gap-2 text-sm text-muted-foreground">
-                <span>提示：图片会按分块方式传输，房主会负责转发给其他在线成员。</span>
+                <span>图片会分块传输，并由房主转发。</span>
               </div>
 
               <div class="flex flex-col gap-3 sm:flex-row">
@@ -946,7 +920,7 @@ watch(
                 </Button>
                 <Button @click="handleSendMessage">
                   <ArrowRight class="size-4" />
-                  发送消息
+                  发送
                 </Button>
               </div>
             </div>
