@@ -86,6 +86,46 @@ pnpm serve
 PORT=8080 pnpm serve
 ```
 
+### 静态资源部署
+
+如果只把 `dist/` 上传到静态站点，例如 `http://lan-chat.nighttea.space/`，页面可以打开，但房间发现和直接加入仍然需要 WebSocket 信令节点。
+
+默认情况下，前端会连接当前域名下的 `/ws`：
+
+```text
+ws://lan-chat.nighttea.space/ws
+```
+
+因此生产环境需要满足其中一种方式：
+
+1. 用 `pnpm serve` 部署本项目的 Node 服务，让它同时提供 `dist/` 和 `/ws`。
+2. 静态站点继续托管 `dist/`，但在同域名上把 `/ws` 反向代理到 `server/index.mjs` 启动的信令服务。
+3. 构建时指定独立信令地址：
+
+```bash
+VITE_SIGNAL_URL=wss://your-signal.example.com/ws pnpm build
+```
+
+也可以在 `index.html` 中注入运行时配置，避免重新构建：
+
+```html
+<script>
+  window.__LAN_CHAT_SIGNAL_URL__ = 'wss://your-signal.example.com/ws'
+</script>
+```
+
+Nginx 反向代理示例：
+
+```nginx
+location /ws {
+  proxy_pass http://127.0.0.1:5173/ws;
+  proxy_http_version 1.1;
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection "upgrade";
+  proxy_set_header Host $host;
+}
+```
+
 ## 使用方式
 
 ### 房主

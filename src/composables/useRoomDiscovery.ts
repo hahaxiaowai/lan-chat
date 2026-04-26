@@ -10,6 +10,7 @@ import type {
 const RECONNECT_DELAY_MS = 2_000
 const DIRECT_JOIN_REQUEST_TIMEOUT_MS = 20_000
 const DIRECT_JOIN_CONNECT_TIMEOUT_MS = 30_000
+const DEFAULT_SIGNAL_PATH = '/ws'
 
 interface UseRoomDiscoveryOptions {
   phase: Ref<'entry' | 'guest-pairing' | 'room'>
@@ -41,9 +42,27 @@ export function useRoomDiscovery(options: UseRoomDiscoveryOptions) {
   let pendingJoinNickname = ''
   let disposed = false
 
+  function normalizeSocketUrl(url: string) {
+    const target = new URL(url, window.location.origin)
+
+    if (target.protocol === 'https:') {
+      target.protocol = 'wss:'
+    } else if (target.protocol === 'http:') {
+      target.protocol = 'ws:'
+    }
+
+    return target.toString()
+  }
+
   function getSocketUrl() {
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    return `${protocol}//${window.location.host}/ws`
+    // Production static hosting can point the frontend at a separately deployed signal node.
+    const configuredUrl = window.__LAN_CHAT_SIGNAL_URL__?.trim() || import.meta.env.VITE_SIGNAL_URL?.trim()
+
+    if (configuredUrl) {
+      return normalizeSocketUrl(configuredUrl)
+    }
+
+    return normalizeSocketUrl(DEFAULT_SIGNAL_PATH)
   }
 
   function setDiscoveryError(message: string) {
