@@ -117,7 +117,7 @@ defineExpose({
               "
               role="button"
               tabindex="0"
-              :title="message.type === 'text' ? '点击复制文本消息' : '点击复制图片或图片名称'"
+              :title="message.type === 'text' ? '点击复制文本消息' : '点击复制图片'"
               @click="$emit('copyMessage', message)"
               @keydown.enter.prevent="$emit('copyMessage', message)"
               @keydown.space.prevent="$emit('copyMessage', message)"

@@ -10,7 +10,6 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 
 const hostNickname = defineModel<string>('hostNickname', { required: true })
@@ -48,20 +47,6 @@ defineEmits<{
           <Wifi class="size-4" />
           创建房间
         </Button>
-
-        <Separator />
-
-        <div class="grid gap-3 text-sm leading-6 text-muted-foreground sm:grid-cols-3">
-          <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-            历史保存在房主浏览器。
-          </div>
-          <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-            同一节点下可看到房间。
-          </div>
-          <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-            支持图片和桌面截图。
-          </div>
-        </div>
       </CardContent>
     </Card>
 
@@ -98,12 +83,7 @@ defineEmits<{
           <ArrowRight class="size-4" />
           生成应答
         </Button>
-
-        <div class="rounded-[24px] border border-border/70 bg-background/80 p-4 text-sm leading-6 text-muted-foreground">
-          只保留文本配对，跨设备更稳定。
-        </div>
       </CardContent>
     </Card>
   </main>
 </template>
-

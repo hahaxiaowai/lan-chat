@@ -11,7 +11,7 @@ import { useRoomDiscovery } from '@/composables/useRoomDiscovery'
 import { useTheme } from '@/composables/useTheme'
 import type { ThemeName } from '@/composables/useTheme'
 import { getSignalExpiryLabel } from '@/lib/signalCodec'
-import type { ChatMessage } from '@/types'
+import type { ChatMessage, ImageMeta } from '@/types'
 import { createPlayfulNickname } from '@/lib/utils'
 
 interface ChatRoomExpose {
@@ -231,6 +231,69 @@ async function copyPlainText(text: string) {
   copyWithExecCommand(text)
 }
 
+function blobToPng(blob: Blob) {
+  return new Promise<Blob>((resolve, reject) => {
+    const image = new Image()
+    const url = URL.createObjectURL(blob)
+
+    image.onload = () => {
+      const canvas = document.createElement('canvas')
+      canvas.width = image.naturalWidth
+      canvas.height = image.naturalHeight
+
+      const context = canvas.getContext('2d')
+      if (!context) {
+        URL.revokeObjectURL(url)
+        reject(new Error('当前浏览器无法处理图片复制。'))
+        return
+      }
+
+      context.drawImage(image, 0, 0)
+      canvas.toBlob((pngBlob) => {
+        URL.revokeObjectURL(url)
+
+        if (!pngBlob) {
+          reject(new Error('当前浏览器无法处理图片复制。'))
+          return
+        }
+
+        resolve(pngBlob)
+      }, 'image/png')
+    }
+
+    image.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('图片加载失败，无法复制。'))
+    }
+
+    image.src = url
+  })
+}
+
+async function copyImageToClipboard(imageMeta: ImageMeta) {
+  if (!imageMeta.previewUrl || !navigator.clipboard?.write || !('ClipboardItem' in window)) {
+    throw new Error('当前浏览器不支持直接复制图片。')
+  }
+
+  const response = await fetch(imageMeta.previewUrl)
+  const blob = await response.blob()
+
+  if (!blob.type.startsWith('image/')) {
+    throw new Error('图片格式无效，无法复制。')
+  }
+
+  const clipboardItem = window.ClipboardItem
+  const supports = typeof clipboardItem.supports === 'function' ? clipboardItem.supports(blob.type) : true
+
+  if (supports) {
+    await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
+    return
+  }
+
+  const pngBlob = await blobToPng(blob)
+  await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })])
+}
+
 async function handleCopyMessage(message: ChatMessage) {
   operationError.value = ''
 
@@ -243,20 +306,13 @@ async function handleCopyMessage(message: ChatMessage) {
 
     const imageMeta = message.imageMeta
 
-    if (imageMeta?.previewUrl && navigator.clipboard?.write && 'ClipboardItem' in window) {
-      const response = await fetch(imageMeta.previewUrl)
-      const blob = await response.blob()
-
-      if (blob.type.startsWith('image/')) {
-        await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
-        setCopyFeedback(message.id, '图片已复制')
-        return
-      }
+    if (imageMeta) {
+      await copyImageToClipboard(imageMeta)
+      setCopyFeedback(message.id, '图片已复制')
+      return
     }
 
-    const fallbackText = imageMeta?.name ?? '消息已复制'
-    await copyPlainText(fallbackText)
-    setCopyFeedback(message.id, imageMeta ? '图片名称已复制' : '消息已复制')
+    throw new Error('没有可复制的消息内容。')
   } catch (error) {
     operationError.value = error instanceof Error ? error.message : '复制失败，请稍后重试。'
   }
@@ -303,6 +359,7 @@ watch(
       :selected-theme-option="selectedThemeOption"
       :theme-options="themeOptions"
       :status-text="statusText"
+      @go-home="handleLeaveRoom"
       @theme-change="handleThemeChange"
     />
 
