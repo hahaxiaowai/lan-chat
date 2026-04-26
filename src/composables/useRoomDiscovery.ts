@@ -1,4 +1,5 @@
 import { onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
+import { t } from '@/i18n'
 import { createId } from '@/lib/utils'
 import type {
   DiscoveredRoom,
@@ -154,14 +155,14 @@ export function useRoomDiscovery(options: UseRoomDiscoveryOptions) {
     socket.addEventListener('close', () => {
       signalState.value = 'offline'
       if (!disposed) {
-        setDiscoveryError('与局域网信令节点断开，正在尝试重连。')
+        setDiscoveryError(t('errors.signalDisconnected'))
       }
       scheduleReconnect()
     })
 
     socket.addEventListener('error', () => {
       signalState.value = 'offline'
-      setDiscoveryError('无法连接局域网信令节点，请确认临时节点已启动。')
+      setDiscoveryError(t('errors.signalConnectFailed'))
     })
 
     socket.addEventListener('message', async (event) => {
@@ -185,7 +186,7 @@ export function useRoomDiscovery(options: UseRoomDiscoveryOptions) {
               offerBundle,
             })
           } catch (error) {
-            const message = error instanceof Error ? error.message : '生成房间邀请失败。'
+            const message = error instanceof Error ? error.message : t('errors.createInviteFailed')
             setDiscoveryError(message)
             postEvent({
               kind: 'join-status',
@@ -207,7 +208,7 @@ export function useRoomDiscovery(options: UseRoomDiscoveryOptions) {
             })
             armDirectJoinTimeout(
               DIRECT_JOIN_CONNECT_TIMEOUT_MS,
-              '已提交加入应答，但局域网直连建立较慢，请确认房主仍在线，或改用邀请码手动加入。',
+              t('errors.directJoinSlowAfterAnswer'),
             )
             postEvent({
               kind: 'join-answer',
@@ -217,7 +218,7 @@ export function useRoomDiscovery(options: UseRoomDiscoveryOptions) {
             })
           } catch (error) {
             clearDirectJoinState()
-            setDiscoveryError(error instanceof Error ? error.message : '自动进入房间失败。')
+            setDiscoveryError(error instanceof Error ? error.message : t('errors.autoJoinFailed'))
           }
           break
         case 'join-answer':
@@ -234,7 +235,7 @@ export function useRoomDiscovery(options: UseRoomDiscoveryOptions) {
               status: 'answer-imported',
             })
           } catch (error) {
-            const message = error instanceof Error ? error.message : '导入访客应答失败。'
+            const message = error instanceof Error ? error.message : t('errors.importAnswerFailed')
             setDiscoveryError(message)
             postEvent({
               kind: 'join-status',
@@ -252,14 +253,14 @@ export function useRoomDiscovery(options: UseRoomDiscoveryOptions) {
 
           if (payload.status === 'failed') {
             clearDirectJoinState()
-            setDiscoveryError(payload.message || '房主未能完成自动加入，请改用邀请码手动加入。')
+            setDiscoveryError(payload.message || t('errors.hostAutoJoinFailed'))
             return
           }
 
           if (payload.status === 'answer-imported') {
             armDirectJoinTimeout(
               DIRECT_JOIN_CONNECT_TIMEOUT_MS,
-              '房主已经接收加入应答，但局域网直连仍未建立，请稍后重试或改用邀请码手动加入。',
+              t('errors.directJoinSlowAfterHostImport'),
             )
           }
           break
@@ -279,10 +280,10 @@ export function useRoomDiscovery(options: UseRoomDiscoveryOptions) {
     clearDiscoveryError()
 
     if (socket?.readyState !== WebSocket.OPEN) {
-      throw new Error('局域网信令节点当前不可用，请确认节点已启动后再试。')
+      throw new Error(t('errors.signalUnavailable'))
     }
 
-    const normalizedNickname = nickname.trim() || '访客'
+    const normalizedNickname = nickname.trim() || t('common.guest')
     pendingJoinNickname = normalizedNickname
     pendingRequestId = createId('join')
     directJoinPendingRoomId.value = room.roomId
@@ -298,7 +299,7 @@ export function useRoomDiscovery(options: UseRoomDiscoveryOptions) {
 
     armDirectJoinTimeout(
       DIRECT_JOIN_REQUEST_TIMEOUT_MS,
-      '房主没有及时响应自动加入请求，请确认对方仍在线，或改用邀请码手动加入。',
+      t('errors.directJoinNoHostResponse'),
     )
   }
 

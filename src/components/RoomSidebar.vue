@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ArrowRight, DoorOpen, Sparkles, Wifi, X } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -34,6 +35,8 @@ defineEmits<{
   importAnswer: []
   leaveRoom: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -46,8 +49,8 @@ defineEmits<{
     "
   >
     <div class="mb-4 flex items-center justify-between gap-3 lg:hidden">
-      <Badge variant="outline">{{ isHost ? '房主模式' : '成员模式' }}</Badge>
-      <Button variant="ghost" size="icon" aria-label="关闭房间面板" @click="mobilePanelOpen = false">
+      <Badge variant="outline">{{ isHost ? t('common.hostMode') : t('common.memberMode') }}</Badge>
+      <Button variant="ghost" size="icon" :aria-label="t('room.closePanel')" @click="mobilePanelOpen = false">
         <X class="size-4" />
       </Button>
     </div>
@@ -59,20 +62,20 @@ defineEmits<{
             <div class="space-y-2">
               <Badge class="w-fit gap-1.5">
                 <Wifi class="size-3.5" />
-                {{ isHost ? '房主模式' : '成员模式' }}
+                {{ isHost ? t('common.hostMode') : t('common.memberMode') }}
               </Badge>
               <CardTitle class="text-base sm:text-lg">{{ roomLabel }}</CardTitle>
             </div>
-            <Badge variant="outline">{{ onlineCount }} 在线</Badge>
+            <Badge variant="outline">{{ t('common.online', { count: onlineCount }) }}</Badge>
           </div>
         </CardHeader>
         <CardContent class="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
           <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-            <p class="text-xs font-medium text-muted-foreground">我的身份</p>
+            <p class="text-xs font-medium text-muted-foreground">{{ t('room.myIdentity') }}</p>
             <p class="mt-2 text-base font-semibold text-foreground">{{ localPeer?.nickname }}</p>
           </div>
           <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-            <p class="text-xs font-medium text-muted-foreground">当前状态</p>
+            <p class="text-xs font-medium text-muted-foreground">{{ t('room.currentStatus') }}</p>
             <p class="mt-2 text-base font-semibold text-foreground">{{ statusText }}</p>
           </div>
         </CardContent>
@@ -80,8 +83,8 @@ defineEmits<{
 
       <Card class="border-border/70 bg-white/80">
         <CardHeader class="pb-4">
-          <CardTitle class="text-base sm:text-lg">成员状态</CardTitle>
-          <CardDescription>显示当前在线成员。</CardDescription>
+          <CardTitle class="text-base sm:text-lg">{{ t('room.membersTitle') }}</CardTitle>
+          <CardDescription>{{ t('room.membersDescription') }}</CardDescription>
         </CardHeader>
         <CardContent class="grid gap-3">
           <article
@@ -91,7 +94,7 @@ defineEmits<{
           >
             <div class="min-w-0">
               <p class="truncate font-medium text-foreground">{{ peer.nickname }}</p>
-              <p class="text-sm text-muted-foreground">{{ peer.isHost ? '房主' : '成员' }}</p>
+              <p class="text-sm text-muted-foreground">{{ peer.isHost ? t('common.host') : t('common.member') }}</p>
             </div>
             <Badge
               :variant="peer.status === 'online' ? 'default' : peer.status === 'connecting' ? 'secondary' : 'outline'"
@@ -107,8 +110,8 @@ defineEmits<{
         <CardHeader class="pb-4">
           <div class="flex items-center justify-between gap-3">
             <div class="space-y-2">
-              <CardTitle class="text-base sm:text-lg">继续加人</CardTitle>
-              <CardDescription>生成邀请码或导入应答。</CardDescription>
+              <CardTitle class="text-base sm:text-lg">{{ t('room.inviteTitle') }}</CardTitle>
+              <CardDescription>{{ t('room.inviteDescription') }}</CardDescription>
             </div>
             <Badge variant="outline">{{ inviteExpiryLabel }}</Badge>
           </div>
@@ -116,57 +119,56 @@ defineEmits<{
 
         <CardContent class="grid gap-4">
           <div class="grid gap-2">
-            <Label>邀请码</Label>
+            <Label>{{ t('room.inviteLabel') }}</Label>
             <Textarea v-model="inviteBundleText" :rows="5" readonly class="min-h-40" />
           </div>
 
           <Button @click="$emit('generateInvite')">
             <Sparkles class="size-4" />
-            生成邀请码
+            {{ t('room.generateInvite') }}
           </Button>
 
           <Separator />
 
           <div class="grid gap-2">
-            <Label>访客应答</Label>
+            <Label>{{ t('room.answerLabel') }}</Label>
             <Textarea
               v-model="pendingAnswerImport"
               :rows="5"
               class="min-h-40"
-              placeholder="粘贴访客返回的应答文本。"
+              :placeholder="t('room.answerPlaceholder')"
             />
           </div>
 
           <Button @click="$emit('importAnswer')">
             <ArrowRight class="size-4" />
-            导入应答
+            {{ t('room.importAnswer') }}
           </Button>
         </CardContent>
       </Card>
 
       <Card v-else class="border-border/70 bg-white/80">
         <CardHeader class="pb-4">
-          <CardTitle class="text-base sm:text-lg">访客提示</CardTitle>
-          <CardDescription>保留和当前会话直接相关的信息。</CardDescription>
+          <CardTitle class="text-base sm:text-lg">{{ t('room.guestTipsTitle') }}</CardTitle>
+          <CardDescription>{{ t('room.guestTipsDescription') }}</CardDescription>
         </CardHeader>
         <CardContent class="grid gap-3 text-sm leading-6 text-muted-foreground">
           <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-            消息会先到房主，再转发给其他成员。
+            {{ t('room.guestTipRelay') }}
           </div>
           <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-            房主刷新或离开后，房间会结束。
+            {{ t('room.guestTipHost') }}
           </div>
           <div class="rounded-[24px] border border-border/70 bg-background/80 p-4">
-            可以在消息区顶部继续加载历史。
+            {{ t('room.guestTipHistory') }}
           </div>
         </CardContent>
       </Card>
 
       <Button :variant="isHost ? 'destructive' : 'outline'" class="w-full" @click="$emit('leaveRoom')">
         <DoorOpen class="size-4" />
-        {{ isHost ? '关闭房间' : '离开房间' }}
+        {{ isHost ? t('room.closeRoom') : t('room.leaveRoom') }}
       </Button>
     </div>
   </aside>
 </template>
-

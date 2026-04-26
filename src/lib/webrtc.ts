@@ -1,3 +1,5 @@
+import { t } from '@/i18n'
+
 const ICE_TIMEOUT_MS = 20_000
 
 export function createPeerConnection(onConnectionStateChange?: (state: RTCPeerConnectionState) => void) {
@@ -20,7 +22,7 @@ export async function waitForIceGatheringComplete(connection: RTCPeerConnection)
   await new Promise<void>((resolve, reject) => {
     const timer = window.setTimeout(() => {
       cleanup()
-      reject(new Error('ICE 收集超时，请确认设备在同一局域网。'))
+      reject(new Error(t('errors.iceTimeout')))
     }, ICE_TIMEOUT_MS)
 
     const handleStateChange = () => {
@@ -45,7 +47,7 @@ export async function createOfferSdp(connection: RTCPeerConnection) {
   await waitForIceGatheringComplete(connection)
 
   if (!connection.localDescription?.sdp) {
-    throw new Error('无法生成房间邀请。')
+    throw new Error(t('errors.createOfferFailed'))
   }
 
   return connection.localDescription.sdp
@@ -57,7 +59,7 @@ export async function createAnswerSdp(connection: RTCPeerConnection) {
   await waitForIceGatheringComplete(connection)
 
   if (!connection.localDescription?.sdp) {
-    throw new Error('无法生成加入应答。')
+    throw new Error(t('errors.createAnswerFailed'))
   }
 
   return connection.localDescription.sdp
@@ -85,7 +87,7 @@ export async function waitForDataChannelOpen(channel: RTCDataChannel) {
   await new Promise<void>((resolve, reject) => {
     const timer = window.setTimeout(() => {
       cleanup()
-      reject(new Error(`数据通道 ${channel.label} 打开超时。`))
+      reject(new Error(t('errors.channelOpenTimeout', { label: channel.label })))
     }, 15_000)
 
     const handleOpen = () => {
@@ -95,7 +97,7 @@ export async function waitForDataChannelOpen(channel: RTCDataChannel) {
 
     const handleClose = () => {
       cleanup()
-      reject(new Error(`数据通道 ${channel.label} 在打开前已关闭。`))
+      reject(new Error(t('errors.channelClosedBeforeOpen', { label: channel.label })))
     }
 
     const cleanup = () => {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ArrowRight, Sparkles, Users, Wifi } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,6 +21,8 @@ defineEmits<{
   createRoom: []
   prepareJoin: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -30,22 +33,22 @@ defineEmits<{
           <div class="space-y-2">
             <Badge class="w-fit gap-1.5">
               <Sparkles class="size-3.5" />
-              房主入口
+              {{ t('entry.hostBadge') }}
             </Badge>
-            <CardTitle class="text-base sm:text-lg">新建房间</CardTitle>
+            <CardTitle class="text-base sm:text-lg">{{ t('entry.hostTitle') }}</CardTitle>
           </div>
         </div>
       </CardHeader>
 
       <CardContent class="space-y-5">
         <div class="grid gap-2">
-          <Label>你的昵称</Label>
-          <Input v-model="hostNickname" maxlength="24" placeholder="例如：客厅平板 / 会议屏" />
+          <Label>{{ t('entry.nickname') }}</Label>
+          <Input v-model="hostNickname" maxlength="24" :placeholder="t('entry.hostPlaceholder')" />
         </div>
 
         <Button class="w-full sm:w-auto" @click="$emit('createRoom')">
           <Wifi class="size-4" />
-          创建房间
+          {{ t('entry.createRoom') }}
         </Button>
       </CardContent>
     </Card>
@@ -56,32 +59,32 @@ defineEmits<{
           <div class="space-y-2">
             <Badge variant="secondary" class="w-fit gap-1.5">
               <Users class="size-3.5" />
-              访客入口
+              {{ t('entry.guestBadge') }}
             </Badge>
-            <CardTitle class="text-base sm:text-lg">加入房间</CardTitle>
+            <CardTitle class="text-base sm:text-lg">{{ t('entry.guestTitle') }}</CardTitle>
           </div>
         </div>
       </CardHeader>
 
       <CardContent class="space-y-5">
         <div class="grid gap-2">
-          <Label>你的昵称</Label>
-          <Input v-model="guestNickname" maxlength="24" placeholder="例如：手机 / 笔记本 / iPad" />
+          <Label>{{ t('entry.nickname') }}</Label>
+          <Input v-model="guestNickname" maxlength="24" :placeholder="t('entry.guestPlaceholder')" />
         </div>
 
         <div class="grid gap-2">
-          <Label>房主的邀请码</Label>
+          <Label>{{ t('entry.inviteLabel') }}</Label>
           <Textarea
             v-model="pendingInviteImport"
             :rows="6"
-            placeholder="粘贴 lanchat: 开头的邀请码文本。"
+            :placeholder="t('entry.invitePlaceholder')"
             class="min-h-40"
           />
         </div>
 
         <Button class="w-full sm:w-auto" @click="$emit('prepareJoin')">
           <ArrowRight class="size-4" />
-          生成应答
+          {{ t('entry.createAnswer') }}
         </Button>
       </CardContent>
     </Card>

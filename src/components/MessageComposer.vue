@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ArrowRight, ImagePlus } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -19,6 +20,7 @@ const emit = defineEmits<{
 }>()
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const { t } = useI18n()
 
 function openFilePicker() {
   fileInputRef.value?.click()
@@ -66,8 +68,8 @@ function handleComposerKeydown(event: KeyboardEvent) {
 <template>
   <Card class="overflow-hidden">
     <CardHeader class="pb-4">
-      <CardTitle class="text-base sm:text-lg">发送消息</CardTitle>
-      <CardDescription>支持文本、粘贴图片和相册发送。</CardDescription>
+      <CardTitle class="text-base sm:text-lg">{{ t('composer.title') }}</CardTitle>
+      <CardDescription>{{ t('composer.description') }}</CardDescription>
     </CardHeader>
 
     <CardContent class="space-y-4">
@@ -84,24 +86,24 @@ function handleComposerKeydown(event: KeyboardEvent) {
         v-model="messageDraft"
         :rows="4"
         class="min-h-32 resize-none"
-        placeholder="输入消息。Enter 发送，Shift + Enter 换行；桌面端可粘贴截图。"
+        :placeholder="t('composer.placeholder')"
         @keydown="handleComposerKeydown"
         @paste="handleComposerPaste"
       />
 
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div class="flex flex-col gap-2 text-sm text-muted-foreground">
-          <span>图片会分块传输，并由房主转发。</span>
+          <span>{{ t('composer.transferHint') }}</span>
         </div>
 
         <div class="flex flex-col gap-3 sm:flex-row">
           <Button variant="outline" @click="openFilePicker">
             <ImagePlus class="size-4" />
-            发送图片
+            {{ t('composer.sendImage') }}
           </Button>
           <Button @click="$emit('sendMessage')">
             <ArrowRight class="size-4" />
-            发送
+            {{ t('composer.send') }}
           </Button>
         </div>
       </div>

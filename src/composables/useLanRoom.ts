@@ -1,4 +1,5 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
+import { t } from '@/i18n'
 import { chatMessageToStoredRecord, listStoredMessages, putStoredMessage } from '@/lib/db'
 import { decodeSignalBundle, encodeSignalBundle } from '@/lib/signalCodec'
 import {
@@ -71,7 +72,7 @@ export function useLanRoom() {
   const joinAnswerBundleText = ref('')
   const pendingInviteImport = ref('')
   const pendingAnswerImport = ref('')
-  const statusText = ref('准备创建局域网房间')
+  const statusText = ref(t('status.ready'))
   const errorText = ref('')
   const recoveryHint = ref<string | null>(sessionStorage.getItem(SESSION_HINT_KEY))
   const messages = ref<ChatMessage[]>([])
@@ -245,7 +246,7 @@ export function useLanRoom() {
 
   function getLocalProfile() {
     if (!localPeer.value) {
-      throw new Error('当前还没有进入房间。')
+      throw new Error(t('errors.notInRoom'))
     }
 
     return localPeer.value
@@ -289,11 +290,11 @@ export function useLanRoom() {
               ...link.profile,
               status: 'offline',
             })
-            pushStatus(`${link.profile.nickname} 已离线`)
+            pushStatus(t('status.peerOffline', { nickname: link.profile.nickname }))
             void syncPresence()
           }
         } else if (guestLink?.peerId === link.peerId && phase.value !== 'entry') {
-          pushError('与房主的局域网连接已中断。')
+          pushError(t('errors.hostConnectionLost'))
         }
       }
     })
@@ -341,7 +342,7 @@ export function useLanRoom() {
         ...link.profile,
         status: 'online',
       })
-      pushStatus(`${link.profile.nickname} 已进入房间`)
+      pushStatus(t('status.peerJoined', { nickname: link.profile.nickname }))
       await syncPresence()
       await syncHistoryToPeer(link.peerId)
       return
@@ -349,7 +350,7 @@ export function useLanRoom() {
 
     phase.value = 'room'
     guestLink = link
-    pushStatus(`已连接到 ${roomLabel.value}`)
+    pushStatus(t('status.connectedToRoom', { roomLabel: roomLabel.value }))
   }
 
   async function sendChatEvent(link: PeerLink, event: RoomEvent) {
@@ -420,7 +421,7 @@ export function useLanRoom() {
           createdAt: record.createdAt,
           imageMeta: {
             attachmentId: `${record.id}-history`,
-            name: record.imageName ?? '图片',
+            name: record.imageName ?? t('common.image'),
             mime: record.imageMime ?? 'image/jpeg',
             size: record.imageSize ?? record.imageBlob.size,
             previewUrl,
@@ -590,8 +591,8 @@ export function useLanRoom() {
   }
 
   async function handleRoomClosed(event: RoomClosedEvent) {
-    showRecoveryHint(event.reason ?? '房主已关闭房间，页面刷新后需要重新配对。')
-    pushError(event.reason ?? '房主已关闭房间。')
+    showRecoveryHint(event.reason ?? t('recovery.hostClosedRefresh'))
+    pushError(event.reason ?? t('recovery.hostClosed'))
     await leaveRoom(false)
   }
 
@@ -619,7 +620,7 @@ export function useLanRoom() {
         await handleHistoryBatch(event)
         break
       case 'history-end':
-        pushStatus(`历史同步完成，共 ${event.total} 条消息`)
+        pushStatus(t('status.historyComplete', { total: event.total }))
         break
       case 'room-closed':
         await handleRoomClosed(event)
@@ -660,21 +661,21 @@ export function useLanRoom() {
     roomLabel.value = roomLabelFromId(nextRoomId)
     peers.value = [hostProfile]
     phase.value = 'room'
-    pushStatus('房间已创建，正在生成邀请包')
-    storeRecoveryHint(`你刚刚刷新了 ${roomLabel.value}，纯前端房间已结束，需要重新生成邀请码。`)
+    pushStatus(t('status.roomCreated'))
+    storeRecoveryHint(t('recovery.refreshedHost', { roomLabel: roomLabel.value }))
     await generateInvite()
   }
 
   async function createInviteBundle() {
     if (!isHost.value) {
-      throw new Error('只有房主可以生成邀请码。')
+      throw new Error(t('errors.hostOnlyInvite'))
     }
 
     clearError()
     const peerId = createId('peer')
     const profile: PeerProfile = {
       id: peerId,
-      nickname: '待加入成员',
+      nickname: t('common.pendingMember'),
       isHost: false,
       joinedAt: Date.now(),
       status: 'connecting',
@@ -721,33 +722,33 @@ export function useLanRoom() {
   async function generateInvite() {
     clearError()
     await createInviteBundle()
-    pushStatus('邀请码已更新，可以复制文本发给新成员')
+    pushStatus(t('status.inviteUpdated'))
   }
 
   async function importGuestAnswer(raw: string) {
     if (!isHost.value) {
-      throw new Error('只有房主可以导入访客应答。')
+      throw new Error(t('errors.hostOnlyImportAnswer'))
     }
 
     clearError()
     const bundle = decodeSignalBundle(raw)
 
     if (bundle.kind !== 'answer') {
-      throw new Error('这不是一个加入应答包。')
+      throw new Error(t('errors.notAnswerBundle'))
     }
 
     if (bundle.roomId !== roomId.value) {
-      throw new Error('这个应答包不属于当前房间。')
+      throw new Error(t('errors.answerWrongRoom'))
     }
 
     if (bundle.expiresAt < Date.now()) {
-      throw new Error('这个应答包已经过期。')
+      throw new Error(t('errors.answerExpired'))
     }
 
     const link = pendingInvites.get(bundle.peerId)
 
     if (!link) {
-      throw new Error('没有找到匹配的邀请码，可能已经被使用或过期。')
+      throw new Error(t('errors.noMatchingInvite'))
     }
 
     link.profile = {
@@ -759,7 +760,7 @@ export function useLanRoom() {
     upsertPeer(link.profile)
     await setAnswerRemoteDescription(link.connection, bundle.sdp)
     pendingAnswerImport.value = ''
-    pushStatus(`正在连接 ${bundle.nickname}`)
+    pushStatus(t('status.connectingPeer', { nickname: bundle.nickname }))
   }
 
   async function prepareJoin(
@@ -775,11 +776,11 @@ export function useLanRoom() {
     const bundle = decodeSignalBundle(rawInvite)
 
     if (bundle.kind !== 'offer') {
-      throw new Error('这不是一个房间邀请码。')
+      throw new Error(t('errors.notOfferBundle'))
     }
 
     if (bundle.expiresAt < Date.now()) {
-      throw new Error('这个房间邀请码已经过期。')
+      throw new Error(t('errors.inviteExpired'))
     }
 
     const guestNickname = nickname.trim() || createPlayfulNickname('guest')
@@ -839,11 +840,11 @@ export function useLanRoom() {
     guestLink = link
     phase.value = 'guest-pairing'
     pendingInviteImport.value = rawInvite.trim()
-    storeRecoveryHint(`你刚刚刷新了 ${bundle.roomLabel}，需要重新扫描房主的邀请码。`)
+    storeRecoveryHint(t('recovery.refreshedGuest', { roomLabel: bundle.roomLabel }))
     pushStatus(
       options?.autoSubmitAnswer
-        ? `已发现 ${bundle.roomLabel}，正在自动提交加入应答`
-        : `已生成加入应答，请发回给 ${bundle.nickname}`,
+        ? t('status.autoSubmittingAnswer', { roomLabel: bundle.roomLabel })
+        : t('status.answerReady', { nickname: bundle.nickname }),
     )
     return encodedAnswerBundle
   }
@@ -872,7 +873,7 @@ export function useLanRoom() {
     }
 
     if (!guestLink) {
-      throw new Error('还没有连到房主。')
+      throw new Error(t('errors.noHostConnection'))
     }
 
     await sendChatEvent(guestLink, {
@@ -892,7 +893,7 @@ export function useLanRoom() {
       pending: true,
       imageMeta: {
         attachmentId: createId('asset'),
-        name: file.name || '图片',
+        name: file.name || t('common.image'),
         mime: file.type || 'image/jpeg',
         size: file.size,
         previewUrl,
@@ -911,7 +912,7 @@ export function useLanRoom() {
     } else if (guestLink) {
       await sendChatEvent(guestLink, startEvent)
     } else {
-      throw new Error('还没有连到房主。')
+      throw new Error(t('errors.noHostConnection'))
     }
 
     const bytes = new Uint8Array(await file.arrayBuffer())
@@ -919,7 +920,7 @@ export function useLanRoom() {
     const imageMeta = message.imageMeta
 
     if (!imageMeta) {
-      throw new Error('图片消息缺少元数据。')
+      throw new Error(t('errors.imageMetaMissing'))
     }
 
     for (let cursor = 0; cursor < bytes.length; cursor += IMAGE_CHUNK_SIZE) {
@@ -955,7 +956,7 @@ export function useLanRoom() {
     }
 
     if (!guestLink) {
-      throw new Error('还没有连到房主。')
+      throw new Error(t('errors.noHostConnection'))
     }
 
     await sendChatEvent(guestLink, completeEvent)
@@ -967,20 +968,20 @@ export function useLanRoom() {
 
   async function leaveRoom(saveHint = true) {
     if (saveHint && roomLabel.value) {
-      storeRecoveryHint(`你离开了 ${roomLabel.value}。如果需要继续聊天，请重新生成或重新扫描邀请码。`)
+      storeRecoveryHint(t('recovery.leftRoom', { roomLabel: roomLabel.value }))
     }
 
     if (isHost.value) {
       await broadcastEvent({
         kind: 'room-closed',
-        reason: '房主已关闭房间，当前会话已经结束。',
+        reason: t('recovery.hostClosedSession'),
       } satisfies RoomClosedEvent)
     }
 
     resetState()
     localPeer.value = null
     phase.value = 'entry'
-    pushStatus('准备创建局域网房间')
+    pushStatus(t('status.ready'))
   }
 
   function dismissRecoveryHint() {
@@ -998,7 +999,7 @@ export function useLanRoom() {
       return
     }
 
-    storeRecoveryHint(`你刷新了 ${roomLabel.value}。纯前端房间不会自动恢复，需要重新配对。`)
+    storeRecoveryHint(t('recovery.refreshedRoom', { roomLabel: roomLabel.value }))
   }
 
   window.addEventListener('beforeunload', handleBeforeUnload)

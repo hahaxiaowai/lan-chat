@@ -1,4 +1,5 @@
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
+import { t } from '@/i18n'
 import type { SignalBundle } from '@/types'
 
 const SIGNAL_PREFIX = 'lanchat:'
@@ -17,7 +18,7 @@ export function decodeSignalBundle(raw: string): SignalBundle {
   const decoded = decompressFromEncodedURIComponent(payload)
 
   if (!decoded) {
-    throw new Error('无法解析信令包，请确认复制内容完整。')
+    throw new Error(t('errors.signalDecodeFailed'))
   }
 
   const parsed = JSON.parse(decoded) as Partial<SignalBundle>
@@ -31,7 +32,7 @@ export function decodeSignalBundle(raw: string): SignalBundle {
     !parsed.sdp ||
     !parsed.expiresAt
   ) {
-    throw new Error('信令包缺少必要字段。')
+    throw new Error(t('errors.signalMissingFields'))
   }
 
   return {
@@ -51,8 +52,8 @@ export function getSignalExpiryLabel(expiresAt: number): string {
   const remainingMinutes = Math.ceil(remainingMs / 60_000)
 
   if (remainingMinutes <= 1) {
-    return '不到 1 分钟'
+    return t('time.lessThanOneMinute')
   }
 
-  return `${remainingMinutes} 分钟`
+  return t('time.minutes', { count: remainingMinutes })
 }

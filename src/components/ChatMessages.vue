@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { LoaderCircle, MessageSquareText, Users } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -31,6 +32,7 @@ defineEmits<{
 }>()
 
 const messageListRef = ref<HTMLElement | null>(null)
+const { t } = useI18n()
 
 function scrollToBottom() {
   // Used by the parent after new outgoing or incoming messages are rendered.
@@ -52,7 +54,7 @@ defineExpose({
       <div class="space-y-2">
         <Badge variant="secondary" class="w-fit gap-1.5">
           <MessageSquareText class="size-3.5" />
-          局域网聊天室
+          {{ t('room.badge') }}
         </Badge>
         <CardTitle class="text-base sm:text-lg">{{ roomLabel }}</CardTitle>
         <CardDescription>{{ statusText }}</CardDescription>
@@ -61,11 +63,11 @@ defineExpose({
       <div class="flex flex-wrap gap-2">
         <Badge variant="outline" class="gap-1.5 px-3 py-1.5">
           <Users class="size-3.5" />
-          {{ onlineCount }} 在线
+          {{ t('common.online', { count: onlineCount }) }}
         </Badge>
         <Button variant="outline" class="lg:hidden" @click="$emit('openMobilePanel')">
           <Users class="size-4" />
-          房间面板
+          {{ t('room.panel') }}
         </Button>
       </div>
     </CardHeader>
@@ -82,7 +84,7 @@ defineExpose({
             class="mx-auto flex rounded-full bg-background/90 backdrop-blur"
             @click="$emit('loadOlderMessages')"
           >
-            加载更早消息
+            {{ t('room.loadOlder') }}
           </Button>
         </div>
 
@@ -101,7 +103,7 @@ defineExpose({
               "
             >
               <span class="font-medium text-foreground">
-                {{ message.senderId === localPeer?.id ? '我' : message.senderNickname }}
+                {{ message.senderId === localPeer?.id ? t('common.me') : message.senderNickname }}
               </span>
               <span>{{ formatClockTime(message.createdAt) }}</span>
             </div>
@@ -117,7 +119,7 @@ defineExpose({
               "
               role="button"
               tabindex="0"
-              :title="message.type === 'text' ? '点击复制文本消息' : '点击复制图片'"
+              :title="message.type === 'text' ? t('room.copyTextTitle') : t('room.copyImageTitle')"
               @click="$emit('copyMessage', message)"
               @keydown.enter.prevent="$emit('copyMessage', message)"
               @keydown.space.prevent="$emit('copyMessage', message)"
@@ -140,7 +142,7 @@ defineExpose({
 
               <div v-if="message.pending" class="mt-3 inline-flex items-center gap-2 text-xs text-muted-foreground">
                 <LoaderCircle class="size-3.5 animate-spin" />
-                传输中…
+                {{ t('room.transferring') }}
               </div>
 
               <div v-else-if="copiedMessageId === message.id" class="mt-3 text-xs text-primary">

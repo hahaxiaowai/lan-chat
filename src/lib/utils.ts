@@ -1,11 +1,16 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { currentLocale, t, type AppLocale } from '@/i18n'
 import type { ChatMessage } from '@/types'
 
 const PLAYFUL_PREFIXES = ['火锅', '奶茶', '蹦迪', '摸鱼', '像素', '宇宙', '海盐', '电波', '旋风', '芝士']
 const PLAYFUL_MIDDLES = ['土豆', '橘猫', '海豚', '章鱼', '汽水', '月亮', '星云', '耳机', '派对', '泡泡']
 const HOST_SUFFIXES = ['房主', '掌柜', '船长', '队长', '大王', '指挥官']
 const GUEST_SUFFIXES = ['访客', '队友', '搭子', '乘客', '选手', '特派员']
+const EN_PLAYFUL_PREFIXES = ['Sunny', 'Pixel', 'Cosmic', 'Signal', 'Neon', 'Turbo', 'Cloud', 'Echo', 'Fresh', 'Bright']
+const EN_PLAYFUL_MIDDLES = ['Potato', 'Comet', 'Bubble', 'Beacon', 'Noodle', 'Rocket', 'Spark', 'Wave', 'Mochi', 'Orbit']
+const EN_HOST_SUFFIXES = ['Host', 'Captain', 'Keeper', 'Anchor', 'Guide', 'Pilot']
+const EN_GUEST_SUFFIXES = ['Guest', 'Buddy', 'Teammate', 'Rider', 'Player', 'Visitor']
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -20,16 +25,20 @@ export function roomLabelFromId(roomId: string) {
   return `LAN-${roomId.slice(-4).toUpperCase()}`
 }
 
-export function createPlayfulNickname(role: 'host' | 'guest') {
-  const suffixes = role === 'host' ? HOST_SUFFIXES : GUEST_SUFFIXES
-  const prefix = PLAYFUL_PREFIXES[Math.floor(Math.random() * PLAYFUL_PREFIXES.length)]
-  const middle = PLAYFUL_MIDDLES[Math.floor(Math.random() * PLAYFUL_MIDDLES.length)]
+export function createPlayfulNickname(role: 'host' | 'guest', locale: AppLocale = currentLocale.value) {
+  const prefixes = locale === 'en-US' ? EN_PLAYFUL_PREFIXES : PLAYFUL_PREFIXES
+  const middles = locale === 'en-US' ? EN_PLAYFUL_MIDDLES : PLAYFUL_MIDDLES
+  const suffixes = locale === 'en-US'
+    ? role === 'host' ? EN_HOST_SUFFIXES : EN_GUEST_SUFFIXES
+    : role === 'host' ? HOST_SUFFIXES : GUEST_SUFFIXES
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)]
+  const middle = middles[Math.floor(Math.random() * middles.length)]
   const suffix = suffixes[Math.floor(Math.random() * suffixes.length)]
-  return `${prefix}${middle}${suffix}`
+  return locale === 'en-US' ? `${prefix} ${middle} ${suffix}` : `${prefix}${middle}${suffix}`
 }
 
 export function formatClockTime(timestamp: number) {
-  return new Intl.DateTimeFormat('zh-CN', {
+  return new Intl.DateTimeFormat(currentLocale.value, {
     hour: '2-digit',
     minute: '2-digit',
   }).format(timestamp)
@@ -60,7 +69,7 @@ export function bytesToSize(bytes: number) {
 export async function blobToDataUrl(blob: Blob) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
-    reader.onerror = () => reject(reader.error ?? new Error('读取图片失败。'))
+    reader.onerror = () => reject(reader.error ?? new Error(t('errors.readImageFailed')))
     reader.onload = () => resolve(String(reader.result))
     reader.readAsDataURL(blob)
   })

@@ -10,6 +10,7 @@ import { useLanRoom } from '@/composables/useLanRoom'
 import { useRoomDiscovery } from '@/composables/useRoomDiscovery'
 import { useTheme } from '@/composables/useTheme'
 import type { ThemeName } from '@/composables/useTheme'
+import { currentLocale, languageOptions, setLocale, t, type AppLocale } from '@/i18n'
 import { getSignalExpiryLabel } from '@/lib/signalCodec'
 import type { ChatMessage, ImageMeta } from '@/types'
 import { createPlayfulNickname } from '@/lib/utils'
@@ -48,8 +49,10 @@ const {
   dismissRecoveryHint,
 } = useLanRoom()
 
-const hostNickname = ref(createPlayfulNickname('host'))
-const guestNickname = ref(createPlayfulNickname('guest'))
+const generatedHostNickname = ref(createPlayfulNickname('host'))
+const generatedGuestNickname = ref(createPlayfulNickname('guest'))
+const hostNickname = ref(generatedHostNickname.value)
+const guestNickname = ref(generatedGuestNickname.value)
 const messageDraft = ref('')
 const operationError = ref('')
 const mobilePanelOpen = ref(false)
@@ -93,13 +96,31 @@ function handleThemeChange(theme: ThemeName) {
   setTheme(theme)
 }
 
+function handleLocaleChange(locale: AppLocale) {
+  const shouldRefreshHostNickname = hostNickname.value === generatedHostNickname.value
+  const shouldRefreshGuestNickname = guestNickname.value === generatedGuestNickname.value
+
+  setLocale(locale)
+
+  generatedHostNickname.value = createPlayfulNickname('host', locale)
+  generatedGuestNickname.value = createPlayfulNickname('guest', locale)
+
+  if (shouldRefreshHostNickname) {
+    hostNickname.value = generatedHostNickname.value
+  }
+
+  if (shouldRefreshGuestNickname) {
+    guestNickname.value = generatedGuestNickname.value
+  }
+}
+
 async function runAction(task: () => Promise<void>) {
   operationError.value = ''
 
   try {
     await task()
   } catch (error) {
-    operationError.value = error instanceof Error ? error.message : '操作失败，请稍后重试。'
+    operationError.value = error instanceof Error ? error.message : t('errors.operationFailed')
   }
 }
 
@@ -210,7 +231,7 @@ function copyWithExecCommand(text: string) {
   document.body.removeChild(textarea)
 
   if (!copied) {
-    throw new Error('当前浏览器不支持复制到剪贴板。')
+    throw new Error(t('errors.clipboardUnsupported'))
   }
 }
 
@@ -244,7 +265,7 @@ function blobToPng(blob: Blob) {
       const context = canvas.getContext('2d')
       if (!context) {
         URL.revokeObjectURL(url)
-        reject(new Error('当前浏览器无法处理图片复制。'))
+        reject(new Error(t('errors.imageCopyProcessFailed')))
         return
       }
 
@@ -253,7 +274,7 @@ function blobToPng(blob: Blob) {
         URL.revokeObjectURL(url)
 
         if (!pngBlob) {
-          reject(new Error('当前浏览器无法处理图片复制。'))
+          reject(new Error(t('errors.imageCopyProcessFailed')))
           return
         }
 
@@ -263,7 +284,7 @@ function blobToPng(blob: Blob) {
 
     image.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(new Error('图片加载失败，无法复制。'))
+      reject(new Error(t('errors.imageLoadFailed')))
     }
 
     image.src = url
@@ -272,14 +293,14 @@ function blobToPng(blob: Blob) {
 
 async function copyImageToClipboard(imageMeta: ImageMeta) {
   if (!imageMeta.previewUrl || !navigator.clipboard?.write || !('ClipboardItem' in window)) {
-    throw new Error('当前浏览器不支持直接复制图片。')
+    throw new Error(t('errors.imageClipboardUnsupported'))
   }
 
   const response = await fetch(imageMeta.previewUrl)
   const blob = await response.blob()
 
   if (!blob.type.startsWith('image/')) {
-    throw new Error('图片格式无效，无法复制。')
+    throw new Error(t('errors.invalidImageFormat'))
   }
 
   const clipboardItem = window.ClipboardItem
@@ -300,7 +321,7 @@ async function handleCopyMessage(message: ChatMessage) {
   try {
     if (message.type === 'text' && message.text) {
       await copyPlainText(message.text)
-      setCopyFeedback(message.id, '文本已复制')
+      setCopyFeedback(message.id, t('errors.textCopied'))
       return
     }
 
@@ -308,13 +329,13 @@ async function handleCopyMessage(message: ChatMessage) {
 
     if (imageMeta) {
       await copyImageToClipboard(imageMeta)
-      setCopyFeedback(message.id, '图片已复制')
+      setCopyFeedback(message.id, t('errors.imageCopied'))
       return
     }
 
-    throw new Error('没有可复制的消息内容。')
+    throw new Error(t('errors.noCopyContent'))
   } catch (error) {
-    operationError.value = error instanceof Error ? error.message : '复制失败，请稍后重试。'
+    operationError.value = error instanceof Error ? error.message : t('errors.copyFailed')
   }
 }
 
@@ -358,9 +379,12 @@ watch(
       :selected-theme="selectedTheme"
       :selected-theme-option="selectedThemeOption"
       :theme-options="themeOptions"
+      :selected-locale="currentLocale"
+      :language-options="languageOptions"
       :status-text="statusText"
       @go-home="handleLeaveRoom"
       @theme-change="handleThemeChange"
+      @locale-change="handleLocaleChange"
     />
 
     <AppAlerts

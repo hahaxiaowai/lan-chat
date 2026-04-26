@@ -1,4 +1,5 @@
 import type { ChatMessage, StoredMessageRecord } from '@/types'
+import { t } from '@/i18n'
 
 const DB_NAME = 'lan-chat'
 const DB_VERSION = 1
@@ -11,7 +12,7 @@ function openDb() {
     dbPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
 
-      request.onerror = () => reject(request.error ?? new Error('无法打开本地消息数据库。'))
+      request.onerror = () => reject(request.error ?? new Error(t('errors.dbOpenFailed')))
       request.onsuccess = () => resolve(request.result)
       request.onupgradeneeded = () => {
         const database = request.result
@@ -48,7 +49,7 @@ export function putStoredMessage(record: StoredMessageRecord) {
   return runTransaction<void>('readwrite', (store, resolve, reject) => {
     const request = store.put(record)
     request.onsuccess = () => resolve()
-    request.onerror = () => reject(request.error ?? new Error('写入消息失败。'))
+    request.onerror = () => reject(request.error ?? new Error(t('errors.dbWriteFailed')))
   })
 }
 
@@ -60,7 +61,7 @@ export function listStoredMessages(roomId: string) {
       const records = (request.result as StoredMessageRecord[]).sort((left, right) => left.createdAt - right.createdAt)
       resolve(records)
     }
-    request.onerror = () => reject(request.error ?? new Error('读取历史消息失败。'))
+    request.onerror = () => reject(request.error ?? new Error(t('errors.dbReadFailed')))
   })
 }
 

@@ -4,8 +4,8 @@ export type ThemeName = 'sunset' | 'ocean' | 'violet'
 
 interface ThemeOption {
   id: ThemeName
-  label: string
-  description: string
+  labelKey: string
+  descriptionKey: string
   previewColor: string
 }
 
@@ -14,20 +14,20 @@ const THEME_STORAGE_KEY = 'lan-chat:theme'
 export const themeOptions: ThemeOption[] = [
   {
     id: 'sunset',
-    label: '日落橙',
-    description: '暖色主调，适合默认展示。',
+    labelKey: 'themes.sunset.label',
+    descriptionKey: 'themes.sunset.description',
     previewColor: '#ef6a42',
   },
   {
     id: 'ocean',
-    label: '海湾蓝',
-    description: '更冷静清爽的蓝绿色界面。',
+    labelKey: 'themes.ocean.label',
+    descriptionKey: 'themes.ocean.description',
     previewColor: '#0f9fb2',
   },
   {
     id: 'violet',
-    label: '极光紫',
-    description: '偏霓虹感的紫粉配色。',
+    labelKey: 'themes.violet.label',
+    descriptionKey: 'themes.violet.description',
     previewColor: '#7c5cff',
   },
 ]

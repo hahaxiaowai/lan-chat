@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ArrowRight, DoorOpen, LoaderCircle } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,6 +24,8 @@ defineProps<{
 defineEmits<{
   leaveRoom: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -33,15 +36,15 @@ defineEmits<{
           <Badge :variant="autoJoining ? 'default' : 'secondary'" class="w-fit gap-1.5">
             <LoaderCircle v-if="autoJoining" class="size-3.5 animate-spin" />
             <ArrowRight v-else class="size-3.5" />
-            {{ autoJoining ? '自动进入' : '手动配对' }}
+            {{ autoJoining ? t('pairing.autoBadge') : t('pairing.manualBadge') }}
           </Badge>
-          <CardTitle class="text-base sm:text-lg">{{ autoJoining ? '正在进入房间' : '把应答发给房主' }}</CardTitle>
+          <CardTitle class="text-base sm:text-lg">{{ autoJoining ? t('pairing.autoTitle') : t('pairing.manualTitle') }}</CardTitle>
           <CardDescription>
             <template v-if="autoJoining">
-              正在进入 {{ directJoinPendingRoomLabel || roomLabel }}，等待房主完成配对。
+              {{ t('pairing.autoDescription', { roomLabel: directJoinPendingRoomLabel || roomLabel }) }}
             </template>
             <template v-else>
-              你正在加入 {{ roomLabel }}。把下方应答发给 {{ hostNickname ?? '房主' }}，导入后会自动进入。
+              {{ t('pairing.manualDescription', { roomLabel, hostNickname: hostNickname ?? t('common.host') }) }}
             </template>
           </CardDescription>
         </div>
@@ -52,13 +55,13 @@ defineEmits<{
       <CardContent>
         <Card v-if="!autoJoining" class="border-border/70 bg-background/70">
           <CardHeader>
-            <CardTitle class="text-base sm:text-lg">加入应答</CardTitle>
-            <CardDescription>复制给房主即可。</CardDescription>
+            <CardTitle class="text-base sm:text-lg">{{ t('pairing.answerTitle') }}</CardTitle>
+            <CardDescription>{{ t('pairing.answerDescription') }}</CardDescription>
           </CardHeader>
           <CardContent class="space-y-4">
             <Textarea v-model="joinAnswerBundleText" :rows="10" readonly class="min-h-64" />
             <div class="flex flex-col gap-3 sm:flex-row">
-              <Button class="sm:w-auto" @click="$emit('leaveRoom')">返回重新开始</Button>
+              <Button class="sm:w-auto" @click="$emit('leaveRoom')">{{ t('pairing.restart') }}</Button>
             </div>
           </CardContent>
         </Card>
@@ -67,17 +70,16 @@ defineEmits<{
           <div class="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
             <LoaderCircle class="size-6 animate-spin" />
           </div>
-          <h3 class="mt-5 text-lg font-semibold text-foreground">等待房主</h3>
+          <h3 class="mt-5 text-lg font-semibold text-foreground">{{ t('pairing.waitingTitle') }}</h3>
           <p class="mt-3 text-sm leading-7 text-muted-foreground">
-            如果等待太久，可以返回首页改用手动加入。
+            {{ t('pairing.waitingDescription') }}
           </p>
           <Button class="mt-6" @click="$emit('leaveRoom')">
             <DoorOpen class="size-4" />
-            返回首页
+            {{ t('common.goHome') }}
           </Button>
         </div>
       </CardContent>
     </Card>
   </main>
 </template>
-
