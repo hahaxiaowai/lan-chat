@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   ArrowRight,
+  ChevronDown,
   CircleAlert,
   DoorOpen,
   ImagePlus,
@@ -33,6 +34,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useLanRoom } from '@/composables/useLanRoom'
 import { useRoomDiscovery } from '@/composables/useRoomDiscovery'
 import { useTheme } from '@/composables/useTheme'
+import type { ThemeName } from '@/composables/useTheme'
 import { getSignalExpiryLabel } from '@/lib/signalCodec'
 import type { ChatMessage } from '@/types'
 import { bytesToSize, cn, createPlayfulNickname, formatClockTime } from '@/lib/utils'
@@ -105,6 +107,11 @@ const onlinePeers = computed(() => peers.value.filter((peer) => peer.status === 
 const autoJoining = computed(() => autoJoinMode.value && phase.value === 'guest-pairing')
 const inviteExpiryLabel = computed(() => (inviteExpiry.value ? getSignalExpiryLabel(inviteExpiry.value) : ''))
 const { selectedTheme, setTheme, themeOptions } = useTheme()
+const selectedThemeOption = computed(() => themeOptions.find((theme) => theme.id === selectedTheme.value) ?? themeOptions[0])
+
+function handleThemeChange(event: Event) {
+  setTheme((event.target as HTMLSelectElement).value as ThemeName)
+}
 
 async function runAction(task: () => Promise<void>) {
   operationError.value = ''
@@ -348,10 +355,10 @@ watch(
       @click="mobilePanelOpen = false"
     />
 
-    <header class="relative overflow-hidden rounded-[32px] border border-white/60 bg-white/70 px-5 py-6 shadow-[0_30px_100px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:px-6 sm:py-7 lg:px-8">
-      <div class="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-primary/15 via-transparent to-accent/35" />
-      <div class="relative grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
-        <div class="space-y-4">
+    <header class="relative overflow-hidden rounded-[28px] border border-white/60 bg-white/72 px-5 py-5 shadow-[0_24px_80px_rgba(15,23,42,0.08)] backdrop-blur-xl sm:px-6 lg:px-7">
+      <div class="absolute inset-0 bg-gradient-to-br from-primary/10 via-white/35 to-accent/20" />
+      <div class="relative grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(460px,520px)] xl:items-start">
+        <div class="space-y-3">
           <div class="flex flex-wrap items-center gap-3">
             <Badge class="gap-1.5 rounded-full px-3 py-1.5">
               <Sparkles class="size-3.5" />
@@ -364,7 +371,7 @@ watch(
             打开页面即可发文字和图片，适合局域网内临时沟通。
           </p>
 
-          <div class="flex flex-wrap gap-2.5">
+          <div class="flex flex-wrap gap-2">
             <Badge variant="outline" class="gap-1.5 px-3 py-1.5">
               <Wifi class="size-3.5" />
               {{ phase === 'room' ? roomLabel : '等待配对' }}
@@ -385,58 +392,57 @@ watch(
         </div>
 
         <div class="grid gap-3">
-          <div class="rounded-[24px] border border-border/70 bg-background/70 p-4 backdrop-blur">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div class="space-y-1">
+          <div class="rounded-[22px] border border-border/70 bg-background/70 p-3.5 backdrop-blur">
+            <div class="grid gap-3 sm:grid-cols-[92px_minmax(0,1fr)] sm:items-center">
+              <div>
                 <div class="flex items-center gap-2 text-sm font-medium text-foreground">
                   <Palette class="size-4 text-primary" />
                   主题
                 </div>
-                <p class="text-sm text-muted-foreground">当前选择会保存在本机。</p>
               </div>
 
-              <div class="flex flex-wrap gap-2">
-                <Button
-                  v-for="theme in themeOptions"
-                  :key="theme.id"
-                  variant="outline"
-                  size="sm"
-                  :class="
-                    cn(
-                      'h-10 min-w-24 justify-start rounded-2xl px-3 text-left',
-                      selectedTheme === theme.id && 'border-primary bg-primary/10 shadow-sm shadow-primary/10',
-                    )
-                  "
-                  @click="setTheme(theme.id)"
+              <div class="relative">
+                <span
+                  class="pointer-events-none absolute left-3 top-1/2 z-10 size-3.5 -translate-y-1/2 rounded-full border border-black/5"
+                  :style="{ backgroundColor: selectedThemeOption.previewColor }"
+                />
+                <select
+                  :value="selectedTheme"
+                  class="h-10 w-full appearance-none rounded-2xl border border-input bg-background/80 py-2 pl-9 pr-10 text-sm font-medium text-foreground shadow-sm outline-none transition-colors focus:border-primary focus:ring-4 focus:ring-ring/15"
+                  aria-label="选择主题"
+                  @change="handleThemeChange"
                 >
-                  <span
-                    class="size-3 shrink-0 rounded-full border border-black/5"
-                    :style="{ backgroundColor: theme.previewColor }"
-                  />
-                  <span>{{ theme.label }}</span>
-                </Button>
+                  <option
+                    v-for="theme in themeOptions"
+                    :key="theme.id"
+                    :value="theme.id"
+                  >
+                    {{ theme.label }}
+                  </option>
+                </select>
+                <ChevronDown class="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               </div>
             </div>
           </div>
 
-          <div class="rounded-[24px] border border-primary/10 bg-white/80 p-4">
-            <div class="flex items-center gap-2 text-sm font-medium text-foreground">
-              <Info class="size-4 text-primary" />
-              当前模式
+          <div class="rounded-[22px] border border-primary/10 bg-white/80 p-3.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Info class="size-4 text-primary" />
+                当前模式
+              </div>
+              <p class="text-xs leading-5 text-muted-foreground">局域网发现，浏览器间传输</p>
             </div>
-            <p class="mt-2 text-sm leading-6 text-muted-foreground">
-              房间由局域网节点发现，消息仍在浏览器间传输。
-            </p>
-            <div class="mt-3 grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
-              <div class="rounded-[20px] border border-border/70 bg-background/80 p-3">
+            <div class="mt-3 grid gap-2 sm:grid-cols-3">
+              <div class="rounded-[18px] border border-border/70 bg-background/80 p-3">
                 <p class="text-xs font-medium text-muted-foreground">状态</p>
                 <p class="mt-1 text-sm font-medium text-foreground">{{ statusText }}</p>
               </div>
-              <div class="rounded-[20px] border border-border/70 bg-background/80 p-3">
+              <div class="rounded-[18px] border border-border/70 bg-background/80 p-3">
                 <p class="text-xs font-medium text-muted-foreground">消息</p>
                 <p class="mt-1 text-sm font-medium text-foreground">文本 + 图片</p>
               </div>
-              <div class="rounded-[20px] border border-border/70 bg-background/80 p-3">
+              <div class="rounded-[18px] border border-border/70 bg-background/80 p-3">
                 <p class="text-xs font-medium text-muted-foreground">拓扑</p>
                 <p class="mt-1 text-sm font-medium text-foreground">房主转发</p>
               </div>
@@ -514,9 +520,7 @@ watch(
               </Badge>
               <CardTitle class="text-base sm:text-lg">新建房间</CardTitle>
             </div>
-            <Badge variant="outline">星型拓扑</Badge>
           </div>
-          <CardDescription>创建后立即得到邀请码。</CardDescription>
         </CardHeader>
 
         <CardContent class="space-y-5">
@@ -556,9 +560,7 @@ watch(
               </Badge>
               <CardTitle class="text-base sm:text-lg">加入房间</CardTitle>
             </div>
-            <Badge variant="outline">无需注册</Badge>
           </div>
-          <CardDescription>粘贴邀请码即可加入。</CardDescription>
         </CardHeader>
 
         <CardContent class="space-y-5">
